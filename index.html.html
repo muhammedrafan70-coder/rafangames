@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rafangames — Mini Games</title>
+  <style>
+    :root {
+      --bg: #090b18;
+      --panel: rgba(19, 23, 46, .78);
+      --panel-strong: #171c38;
+      --text: #f5f6ff;
+      --muted: #a6accb;
+      --cyan: #61e8ff;
+      --pink: #ff6cba;
+      --yellow: #ffd166;
+      --green: #72f2b5;
+      --line: rgba(255,255,255,.10);
+      --shadow: 0 24px 80px rgba(0,0,0,.38);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(97,232,255,.15), transparent 30%),
+        radial-gradient(circle at 90% 5%, rgba(255,108,186,.15), transparent 25%),
+        linear-gradient(145deg, #090b18 0%, #11132a 55%, #0a0c1b 100%);
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed; inset: 0; pointer-events: none; opacity: .2;
+      background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+    .shell { width: min(1120px, calc(100% - 36px)); margin: 0 auto; padding: 34px 0 46px; position: relative; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 42px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: -.03em; }
+    .brand-mark { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 13px; color: #080a17; background: linear-gradient(135deg, var(--cyan), var(--green)); box-shadow: 0 0 28px rgba(97,232,255,.25); font-size: 21px; }
+    .brand span { font-size: 18px; }
+    .tiny-status { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 8px; }
+    .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 12px var(--green); }
+    .hero { max-width: 730px; margin-bottom: 30px; }
+    .eyebrow { color: var(--cyan); text-transform: uppercase; letter-spacing: .18em; font-weight: 800; font-size: 11px; margin-bottom: 13px; }
+    h1 { font-size: clamp(42px, 7vw, 78px); line-height: .97; margin: 0 0 19px; letter-spacing: -.065em; }
+    h1 em { color: var(--pink); font-style: normal; }
+    .hero p { color: var(--muted); font-size: 17px; line-height: 1.6; max-width: 590px; margin: 0; }
+    .layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel { border: 1px solid var(--line); background: var(--panel); border-radius: 24px; box-shadow: var(--shadow); backdrop-filter: blur(18px); }
+    .game-list { padding: 12px; position: sticky; top: 18px; }
+    .list-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .15em; font-weight: 800; padding: 9px 12px 12px; }
+    .game-tab { width: 100%; text-align: left; border: 0; background: transparent; color: var(--text); padding: 15px 13px; border-radius: 15px; cursor: pointer; display: flex; gap: 12px; align-items: center; margin-bottom: 5px; transition: .2s ease; }
+    .game-tab:hover { background: rgba(255,255,255,.06); transform: translateX(2px); }
+    .game-tab.active { background: linear-gradient(105deg, rgba(97,232,255,.16), rgba(255,108,186,.09)); box-shadow: inset 3px 0 0 var(--cyan); }
+    .game-icon { font-size: 24px; width: 34px; text-align: center; }
+    .game-tab strong { display: block; font-size: 14px; }
+    .game-tab small { color: var(--muted); display: block; margin-top: 3px; font-size: 11px; }
+    .tip { border-top: 1px solid var(--line); margin: 10px 4px 0; padding: 18px 10px 8px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .tip b { color: var(--yellow); }
+    .game-panel { min-height: 570px; padding: 26px; }
+    .game-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; border-bottom: 1px solid var(--line); padding-bottom: 21px; margin-bottom: 25px; }
+    .game-head h2 { margin: 0; letter-spacing: -.04em; font-size: 27px; }
+    .game-head p { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    .score-pill { border: 1px solid var(--line); padding: 10px 13px; border-radius: 13px; text-align: right; white-space: nowrap; }
+    .score-pill span { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .14em; }
+    .score-pill strong { color: var(--yellow); font-size: 20px; }
+    .screen { display: none; animation: rise .35s ease both; }
+    .screen.active { display: block; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    button { font: inherit; }
+    .primary, .secondary { border: 0; cursor: pointer; border-radius: 12px; padding: 11px 16px; font-weight: 800; transition: .2s ease; }
+    .primary { color: #090b18; background: linear-gradient(135deg, var(--cyan), var(--green)); box-shadow: 0 10px 25px rgba(97,232,255,.16); }
+    .primary:hover { transform: translateY(-2px); box-shadow: 0 13px 30px rgba(97,232,255,.27); }
+    .secondary { color: var(--text); background: rgba(255,255,255,.07); border: 1px solid var(--line); }
+    .secondary:hover { background: rgba(255,255,255,.12); }
+    .ttt-wrap { display: grid; grid-template-columns: minmax(240px, 330px) 1fr; gap: 34px; align-items: center; justify-content: center; }
+    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; max-width: 330px; aspect-ratio: 1; }
+    .cell { border: 1px solid rgba(97,232,255,.18); border-radius: 18px; background: rgba(255,255,255,.045); color: var(--cyan); font-weight: 900; font-size: clamp(34px, 7vw, 58px); cursor: pointer; transition: .2s ease; }
+    .cell:hover:not(:disabled) { background: rgba(97,232,255,.1); border-color: rgba(97,232,255,.6); transform: scale(.97); }
+    .cell.o { color: var(--pink); }
+    .cell:disabled { cursor: default; }
+    .game-info h3 { margin: 0 0 8px; font-size: 20px; }
+    .game-info p { color: var(--muted); line-height: 1.55; font-size: 13px; max-width: 290px; }
+    .message { min-height: 25px; margin: 20px 0; color: var(--yellow); font-weight: 700; font-size: 13px; }
+    .memory-wrap { max-width: 550px; margin: 0 auto; }
+    .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; }
+    .memory-card { aspect-ratio: 1; border: 1px solid rgba(255,108,186,.23); border-radius: 15px; background: linear-gradient(145deg, #20264b, #12162e); cursor: pointer; font-size: 30px; color: transparent; transition: transform .25s, background .25s; position: relative; transform-style: preserve-3d; }
+    .memory-card::after { content: "✦"; color: rgba(255,255,255,.25); position: absolute; inset: 0; display: grid; place-items: center; }
+    .memory-card.flipped, .memory-card.matched { background: linear-gradient(145deg, rgba(255,108,186,.23), rgba(97,232,255,.16)); color: var(--text); transform: rotateY(180deg); }
+    .memory-card.flipped::after, .memory-card.matched::after { content: none; }
+    .memory-card.matched { border-color: var(--green); box-shadow: 0 0 18px rgba(114,242,181,.15); cursor: default; }
+    .memory-actions { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 20px; }
+    .subtle { color: var(--muted); font-size: 12px; }
+    .reaction-wrap { min-height: 390px; display: grid; place-items: center; }
+    .reaction-zone { width: min(100%, 570px); height: 340px; border: 1px dashed rgba(97,232,255,.24); border-radius: 20px; background: rgba(7,9,23,.35); position: relative; overflow: hidden; display: grid; place-items: center; }
+    .reaction-zone.waiting { background: radial-gradient(circle at 50% 50%, rgba(255,209,102,.09), transparent 45%); }
+    .reaction-target { position: absolute; width: 62px; height: 62px; border: 0; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, var(--pink) 22%, #bb2b77 75%); box-shadow: 0 0 0 8px rgba(255,108,186,.1), 0 0 35px rgba(255,108,186,.8); cursor: pointer; display: none; }
+    .reaction-target.show { display: block; animation: pop .22s ease both; }
+    @keyframes pop { from { transform: scale(.3); opacity: .4; } to { transform: scale(1); opacity: 1; } }
+    .reaction-center { text-align: center; color: var(--muted); padding: 20px; }
+    .reaction-center strong { color: var(--text); display: block; font-size: 22px; margin-bottom: 6px; }
+    .reaction-center p { margin: 0 0 18px; font-size: 13px; }
+    .result-big { color: var(--cyan); font-weight: 900; font-size: 42px; display: block; margin-bottom: 7px; }
+    .number-wrap, .word-wrap { max-width: 470px; margin: 0 auto; }
+    .number-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 9px; border-radius: 19px; background: rgba(7,9,23,.55); border: 1px solid var(--line); }
+    .number-cell { aspect-ratio: 1; border: 0; border-radius: 12px; background: rgba(255,255,255,.055); color: transparent; font-size: clamp(20px, 5vw, 34px); font-weight: 900; transition: .18s ease; }
+    .number-cell:not(:empty) { color: #101226; background: linear-gradient(135deg, var(--yellow), #ff9f68); box-shadow: 0 8px 20px rgba(255,209,102,.12); }
+    .number-cell[data-value="4"] { background: linear-gradient(135deg, #ffb86b, #ff7994); }
+    .number-cell[data-value="8"], .number-cell[data-value="16"] { color: white; background: linear-gradient(135deg, var(--pink), #9d5cff); }
+    .number-cell[data-value="32"], .number-cell[data-value="64"] { color: white; background: linear-gradient(135deg, #7c6cff, var(--cyan)); }
+    .number-cell[data-value="128"], .number-cell[data-value="256"], .number-cell[data-value="512"] { color: #101226; background: linear-gradient(135deg, var(--green), var(--cyan)); }
+    .number-controls { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+    .number-controls .secondary { min-width: 44px; padding: 10px 13px; }
+    .word-wrap { text-align: center; padding-top: 18px; }
+    .scramble { color: var(--cyan); font-size: clamp(35px, 9vw, 62px); font-weight: 900; letter-spacing: .18em; text-transform: uppercase; margin: 18px 0 6px 0.18em; text-shadow: 0 0 28px rgba(97,232,255,.22); }
+    .word-hint { color: var(--muted); font-size: 13px; margin-bottom: 25px; }
+    .word-form { display: flex; gap: 8px; max-width: 390px; margin: 0 auto; }
+    .word-form input { min-width: 0; flex: 1; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.07); color: var(--text); padding: 12px 13px; font: inherit; outline: none; }
+    .word-form input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(97,232,255,.1); }
+    .word-actions { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 20px; }
+    .word-message { min-height: 25px; color: var(--yellow); font-weight: 700; font-size: 13px; }
+    footer { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 11px; margin-top: 25px; padding: 0 4px; }
+    @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } .game-list { position: static; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; } .list-label, .tip { display: none; } .game-tab { margin: 0; padding: 11px 8px; flex-direction: column; gap: 5px; text-align: center; } .game-tab small { display: none; } .ttt-wrap { grid-template-columns: 1fr; justify-items: center; gap: 20px; } .game-info { text-align: center; } .game-info p { margin-left: auto; margin-right: auto; } .game-head { align-items: center; } }
+    @media (max-width: 460px) { .shell { width: min(100% - 22px, 1120px); padding-top: 20px; } header { margin-bottom: 28px; } .tiny-status { display: none; } .game-panel { padding: 18px 14px; } .memory-grid { gap: 7px; } .memory-card { border-radius: 10px; font-size: 24px; } .reaction-zone { height: 300px; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand"><div class="brand-mark">✦</div><span>rafangames</span></div>
+      <div class="tiny-status"><i class="live-dot"></i> all systems playful</div>
+    </header>
+    <section class="hero">
+      <div class="eyebrow">A tiny arcade for your browser</div>
+      <h1>Pick a game.<br><em>Make a little magic.</em></h1>
+      <p>Five bite-sized challenges for a quick break. No downloads, no sign-ups, just press play and see what you’ve got.</p>
+    </section>
+    <section class="layout">
+      <aside class="panel game-list">
+        <div class="list-label">Choose your challenge</div>
+        <button class="game-tab active" data-game="ttt"><div class="game-icon">⭕</div><div><strong>Trio</strong><small>Classic tic-tac-toe</small></div></button>
+        <button class="game-tab" data-game="memory"><div class="game-icon">🧠</div><div><strong>Match Up</strong><small>Find every pair</small></div></button>
+        <button class="game-tab" data-game="reaction"><div class="game-icon">⚡</div><div><strong>Quick Draw</strong><small>Test your reflexes</small></div></button>
+        <button class="game-tab" data-game="number"><div class="game-icon">🔢</div><div><strong>2048 Lite</strong><small>Stack your score</small></div></button>
+        <button class="game-tab" data-game="word"><div class="game-icon">🔤</div><div><strong>Word Jumble</strong><small>Unscramble it</small></div></button>
+        <div class="tip"><b>Arcade tip:</b> play with sound off, music on, and a snack within reach.</div>
+      </aside>
+      <section class="panel game-panel">
+        <div class="screen active" id="ttt-screen">
+          <div class="game-head"><div><h2>Trio</h2><p>Beat the house bot. You’re X.</p></div><div class="score-pill"><span>Wins</span><strong id="ttt-score">0</strong></div></div>
+          <div class="ttt-wrap"><div><div class="board" id="board"></div><div class="message" id="ttt-message">Your move — place an X.</div><button class="secondary" id="ttt-reset">New round</button></div><div class="game-info"><h3>Three in a row</h3><p>Line up three symbols horizontally, vertically, or diagonally before the bot does.</p><button class="primary" id="ttt-start">Start round</button></div></div>
+        </div>
+        <div class="screen" id="memory-screen">
+          <div class="game-head"><div><h2>Match Up</h2><p>Flip two cards and find all six pairs.</p></div><div class="score-pill"><span>Moves</span><strong id="memory-moves">0</strong></div></div>
+          <div class="memory-wrap"><div class="memory-grid" id="memory-grid"></div><div class="memory-actions"><span class="subtle" id="memory-message">Take your best shot.</span><button class="secondary" id="memory-reset">Shuffle</button></div></div>
+        </div>
+        <div class="screen" id="reaction-screen">
+          <div class="game-head"><div><h2>Quick Draw</h2><p>Wait for the glow, then tap the target.</p></div><div class="score-pill"><span>Best</span><strong id="reaction-best">—</strong></div></div>
+          <div class="reaction-wrap"><div class="reaction-zone" id="reaction-zone"><div class="reaction-center" id="reaction-center"><strong>Ready when you are?</strong><p>One target. One chance. One very honest score.</p><button class="primary" id="reaction-start">Start test</button></div><button class="reaction-target" id="reaction-target" aria-label="Tap target"></button></div></div>
+        </div>
+        <div class="screen" id="number-screen">
+          <div class="game-head"><div><h2>2048 Lite</h2><p>Use the arrows or buttons to merge matching tiles.</p></div><div class="score-pill"><span>Score</span><strong id="number-score">0</strong></div></div>
+          <div class="number-wrap"><div class="number-grid" id="number-grid"></div><div class="number-controls"><button class="secondary" data-move="up">↑</button><button class="secondary" data-move="left">←</button><button class="secondary" data-move="down">↓</button><button class="secondary" data-move="right">→</button><button class="secondary" id="number-reset">New board</button></div><div class="message" id="number-message">Slide to start.</div></div>
+        </div>
+        <div class="screen" id="word-screen">
+          <div class="game-head"><div><h2>Word Jumble</h2><p>Unscramble the letters before you lose the thread.</p></div><div class="score-pill"><span>Points</span><strong id="word-score">0</strong></div></div>
+          <div class="word-wrap"><div class="scramble" id="scramble">—</div><div class="word-hint">Type the original word</div><form class="word-form" id="word-form"><input id="word-input" autocomplete="off" aria-label="Your guess"><button class="primary" type="submit">Check</button></form><div class="word-actions"><div class="word-message" id="word-message">Make your move.</div><button class="secondary" id="word-skip" type="button">Skip</button></div></div>
+        </div>
+      </section>
+    </section>
+    <footer><span>Built for tiny victories.</span><span>rafangames · 2026</span></footer>
+  </main>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => [...document.querySelectorAll(s)];
+    $$('.game-tab').forEach(tab => tab.addEventListener('click', () => { $$('.game-tab').forEach(t => t.classList.remove('active')); $$('.screen').forEach(s => s.classList.remove('active')); tab.classList.add('active'); $('#' + tab.dataset.game + '-screen').classList.add('active'); }));
+
+    // Trio
+    let tttBoard = Array(9).fill(''), tttTurn = 'X', tttOver = false, tttWins = 0;
+    const winningLines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    function tttWinner(b) { for (const [a,c,d] of winningLines) if (b[a] && b[a] === b[c] && b[a] === b[d]) return b[a]; return b.every(Boolean) ? 'draw' : null; }
+    function renderTtt() { const board = $('#board'); board.innerHTML = ''; tttBoard.forEach((v,i) => { const btn = document.createElement('button'); btn.className = 'cell ' + (v === 'O' ? 'o' : ''); btn.textContent = v; btn.disabled = Boolean(v) || tttOver || tttTurn !== 'X'; btn.addEventListener('click', () => tttMove(i)); board.appendChild(btn); }); }
+    function finishTtt(result) { tttOver = true; const msg = result === 'X' ? 'You win! That was clean.' : result === 'O' ? 'The bot got you. Run it back?' : 'A draw — perfectly balanced.'; $('#ttt-message').textContent = msg; if (result === 'X') { tttWins++; $('#ttt-score').textContent = tttWins; } renderTtt(); }
+    function tttMove(i) { if (tttOver || tttTurn !== 'X') return; tttBoard[i] = 'X'; const result = tttWinner(tttBoard); if (result) return finishTtt(result); tttTurn = 'O'; renderTtt(); $('#ttt-message').textContent = 'Bot is thinking…'; setTimeout(() => { const open = tttBoard.map((v,j) => v ? null : j).filter(v => v !== null); const pick = open[Math.floor(Math.random() * open.length)]; tttBoard[pick] = 'O'; const botResult = tttWinner(tttBoard); if (botResult) finishTtt(botResult); else { tttTurn = 'X'; $('#ttt-message').textContent = 'Your move — place an X.'; renderTtt(); } }, 420); }
+    function resetTtt() { tttBoard = Array(9).fill(''); tttTurn = 'X'; tttOver = false; $('#ttt-message').textContent = 'Your move — place an X.'; renderTtt(); }
+    $('#ttt-reset').addEventListener('click', resetTtt); $('#ttt-start').addEventListener('click', resetTtt); resetTtt();
+
+    // Match Up
+    const symbols = ['🍋','🌙','🚀','🎧','🍀','🪩']; let memoryCards = [], firstCard = null, lockBoard = false, memoryMoves = 0, matched = 0;
+    function setupMemory() { memoryCards = [...symbols, ...symbols].sort(() => Math.random() - .5); firstCard = null; lockBoard = false; memoryMoves = 0; matched = 0; $('#memory-moves').textContent = '0'; $('#memory-message').textContent = 'Take your best shot.'; const grid = $('#memory-grid'); grid.innerHTML = ''; memoryCards.forEach((symbol,i) => { const btn = document.createElement('button'); btn.className = 'memory-card'; btn.textContent = symbol; btn.dataset.symbol = symbol; btn.dataset.index = i; btn.addEventListener('click', () => flipCard(btn)); grid.appendChild(btn); }); }
+    function flipCard(card) { if (lockBoard || card === firstCard || card.classList.contains('matched') || card.classList.contains('flipped')) return; card.classList.add('flipped'); if (!firstCard) { firstCard = card; return; } memoryMoves++; $('#memory-moves').textContent = memoryMoves; if (card.dataset.symbol === firstCard.dataset.symbol) { card.classList.add('matched'); firstCard.classList.add('matched'); firstCard = null; matched++; if (matched === symbols.length) $('#memory-message').textContent = 'Perfect board! You did it in ' + memoryMoves + ' moves.'; } else { lockBoard = true; setTimeout(() => { card.classList.remove('flipped'); firstCard.classList.remove('flipped'); firstCard = null; lockBoard = false; }, 720); } }
+    $('#memory-reset').addEventListener('click', setupMemory); setupMemory();
+
+    // Quick Draw
+    let reactionTimer, reactionStart, reactionBest = null;
+    function beginReaction() { clearTimeout(reactionTimer); const zone = $('#reaction-zone'), center = $('#reaction-center'), target = $('#reaction-target'); zone.classList.add('waiting'); center.innerHTML = '<strong>Stay ready…</strong><p>Don’t click until the target appears.</p>'; target.classList.remove('show'); reactionTimer = setTimeout(() => { const rect = zone.getBoundingClientRect(); target.style.left = (Math.random() * (rect.width - 82) + 10) + 'px'; target.style.top = (Math.random() * (rect.height - 82) + 10) + 'px'; reactionStart = performance.now(); target.classList.add('show'); zone.classList.remove('waiting'); }, 800 + Math.random() * 1900); }
+    $('#reaction-start').addEventListener('click', beginReaction); $('#reaction-target').addEventListener('click', () => { const ms = Math.round(performance.now() - reactionStart); reactionBest = reactionBest === null ? ms : Math.min(reactionBest, ms); $('#reaction-best').textContent = reactionBest + 'ms'; $('#reaction-target').classList.remove('show'); $('#reaction-center').innerHTML = '<span class="result-big">' + ms + 'ms</span><strong>' + (ms < 260 ? 'Lightning hands.' : ms < 430 ? 'Nice reflexes.' : 'Warm-up round.') + '</strong><p>Try again and chase a new best.</p><button class="primary" id="reaction-again">Run it back</button>'; $('#reaction-again').addEventListener('click', beginReaction); });
+
+    // 2048 Lite
+    let numberBoard = Array(16).fill(0), numberScore = 0;
+    function addNumberTile() { const open = numberBoard.map((v,i) => v ? null : i).filter(i => i !== null); if (open.length) numberBoard[open[Math.floor(Math.random() * open.length)]] = Math.random() < .9 ? 2 : 4; }
+    function slideLine(line) { const packed = line.filter(Boolean); for (let i = 0; i < packed.length - 1; i++) if (packed[i] === packed[i + 1]) { packed[i] *= 2; numberScore += packed[i]; packed.splice(i + 1, 1); } return packed.concat(Array(4 - packed.length).fill(0)); }
+    function renderNumber() { $('#number-score').textContent = numberScore; const grid = $('#number-grid'); grid.innerHTML = ''; numberBoard.forEach(v => { const tile = document.createElement('div'); tile.className = 'number-cell'; tile.textContent = v || ''; if (v) tile.dataset.value = v; grid.appendChild(tile); }); }
+    function numberCanMove() { return numberBoard.some((v,i) => !v || (i % 4 < 3 && v === numberBoard[i + 1]) || (i < 12 && v === numberBoard[i + 4])); }
+    function moveNumber(direction) { const before = numberBoard.join(','); const next = Array(16).fill(0); for (let n = 0; n < 4; n++) { let indices = direction === 'left' ? [n*4,n*4+1,n*4+2,n*4+3] : direction === 'right' ? [n*4+3,n*4+2,n*4+1,n*4] : direction === 'up' ? [n,n+4,n+8,n+12] : [n+12,n+8,n+4,n]; const moved = slideLine(indices.map(i => numberBoard[i])); moved.forEach((v,j) => { next[indices[j]] = v; }); } numberBoard = next; if (numberBoard.join(',') !== before) { addNumberTile(); renderNumber(); const high = Math.max(...numberBoard); $('#number-message').textContent = high >= 2048 ? 'You made 2048 — legendary.' : numberCanMove() ? 'Keep sliding.' : 'Board locked. Start a new board.'; } }
+    function resetNumber() { numberBoard = Array(16).fill(0); numberScore = 0; addNumberTile(); addNumberTile(); $('#number-message').textContent = 'Slide to start.'; renderNumber(); }
+    document.querySelectorAll('[data-move]').forEach(btn => btn.addEventListener('click', () => moveNumber(btn.dataset.move))); document.addEventListener('keydown', e => { if (!$('#number-screen').classList.contains('active')) return; const keys = {ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right'}; if (keys[e.key]) { e.preventDefault(); moveNumber(keys[e.key]); } }); $('#number-reset').addEventListener('click', resetNumber); resetNumber();
+
+    // Word Jumble
+    const wordBank = ['galaxy','pixel','arcade','rocket','jungle','puzzle','neon','button','castle','magic']; let currentWord = '', wordScore = 0;
+    function scrambleWord(word) { let mixed = word.split(''); do { mixed.sort(() => Math.random() - .5); } while (mixed.join('') === word && word.length > 1); return mixed.join(''); }
+    function nextWord() { currentWord = wordBank[Math.floor(Math.random() * wordBank.length)]; $('#scramble').textContent = scrambleWord(currentWord); $('#word-input').value = ''; $('#word-message').textContent = 'Make your move.'; $('#word-input').focus(); }
+    $('#word-form').addEventListener('submit', e => { e.preventDefault(); const guess = $('#word-input').value.trim().toLowerCase(); if (!guess) return; if (guess === currentWord) { wordScore++; $('#word-score').textContent = wordScore; $('#word-message').textContent = 'Correct — next one!'; setTimeout(nextWord, 500); } else $('#word-message').textContent = 'Not quite. Try again or skip.'; }); $('#word-skip').addEventListener('click', nextWord); nextWord();
+  </script>
+</body>
+</html>
